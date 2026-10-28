@@ -20,3 +20,5 @@ h1,h2{font-size:clamp(30px,3vw,52px);line-height:1.1}.number{font-size:clamp(66p
 .day h3{font-size:clamp(26px,2.3vw,38px)}.day p{font-size:clamp(24px,2vw,32px);margin-top:8px}
 .day .day-condition{font-size:clamp(30px,2.8vw,46px);font-weight:bold;line-height:1.2}
 @media(max-width:850px){.daily-forecast{grid-template-columns:1fr}}
+
+.air-quality{font-size:clamp(32px,4vw,68px);font-weight:700;line-height:1.15;overflow-wrap:anywhere;margin:8px 0}

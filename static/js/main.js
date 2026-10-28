@@ -19,8 +19,8 @@ function estimate(rows,time,hours){
 }
 function renderSimulation(){
  $('general-summary').textContent='Simulation : aucune prévision météo réelle.';$('daily-forecast').replaceChildren();$('daily-note').textContent='Les prévisions sur trois jours nécessitent le mode en ligne.';
- $('source-status').textContent='Capteurs · simulation';$('rain-title').textContent='Pluie cumulée';$('rain-note').textContent='Depuis le début de la session';$('gas-note').textContent='Résistance · pas un indice AQI';$('forecast-label').textContent='Estimation expérimentale';
- for(const [key,m] of Object.entries(M))$(key).textContent=key==='windDirection'?`${dirs[Math.round(shown[key]/45)%8]} · ${shown[key].toFixed(0)}°`:(key==='pressure'?shown[key]/10:shown[key]).toFixed(m[4]);
+ $('source-status').textContent='Capteurs · simulation';$('rain-title').textContent='Pluie cumulée';$('rain-note').textContent='Depuis le début de la session';$('gas-note').textContent='Non évaluée en simulation';$('air-quality').textContent='Indisponible';$('forecast-label').textContent='Estimation expérimentale';
+ for(const [key,m] of Object.entries(M).filter(([key])=>key!=='gasResistance'))$(key).textContent=key==='windDirection'?`${dirs[Math.round(shown[key]/45)%8]} · ${shown[key].toFixed(0)}°`:(key==='pressure'?shown[key]/10:shown[key]).toFixed(m[4]);
  $('decision').textContent=`Capteur : ${raw.temperature.toFixed(1)} °C · affichage : ${shown.temperature.toFixed(1)} °C. Mise à jour si l’écart dépasse ${threshold.toFixed(1)} °C.`;
  $('clock').textContent='Heure de simulation : '+new Date(now).toLocaleString('fr-CA');
  $('outlook-title').textContent=`Tendance sur ${horizon} heures`;
@@ -51,7 +51,7 @@ $('advance').onclick=()=>{ingest({temperature:clamp(raw.temperature-.1+(Math.ran
 $('reset').onclick=()=>{raw={...initial};shown={...initial};seed();render();input();$('notice').textContent='Données et historique fictif réinitialisés.';};
 $('contrast').onclick=()=>{$('contrast').textContent=document.body.classList.toggle('light')?'Fond sombre':'Fond clair';};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else $('notice').textContent='Plein écran indisponible.';}catch{$('notice').textContent='Plein écran indisponible.';}};
-$('speak').onclick=()=>{if(mode==='online'){speakOnline();return;}if(!('speechSynthesis' in window)){$('notice').textContent='Lecture vocale indisponible.';return;}const units={temperature:'degrés Celsius',humidity:'pour cent',pressure:'kilopascals',windSpeed:'kilomètres par heure',rainfall:'millimètres',gasResistance:'kilo ohms'};const parts=Object.entries(M).map(([key,m])=>`${m[0]} : ${key==='windDirection'?dirs[Math.round(shown[key]/45)%8]:(key==='pressure'?shown[key]/10:shown[key]).toFixed(m[4]).replace('.',',')+' '+units[key]}`);const speech=new SpeechSynthesisUtterance(parts.join('. ')+'. Tendance expérimentale : '+$('trend').textContent);speech.lang='fr-CA';speech.rate=.85;speech.onerror=()=>{$('notice').textContent='La lecture vocale n’a pas pu démarrer.';};window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);};
+$('speak').onclick=()=>{if(mode==='online'){speakOnline();return;}if(!('speechSynthesis' in window)){$('notice').textContent='Lecture vocale indisponible.';return;}const units={temperature:'degrés Celsius',humidity:'pour cent',pressure:'kilopascals',windSpeed:'kilomètres par heure',rainfall:'millimètres',gasResistance:'kilo ohms'};const parts=Object.entries(M).filter(([key])=>key!=='gasResistance').map(([key,m])=>`${m[0]} : ${key==='windDirection'?dirs[Math.round(shown[key]/45)%8]:(key==='pressure'?shown[key]/10:shown[key]).toFixed(m[4]).replace('.',',')+' '+units[key]}`);const speech=new SpeechSynthesisUtterance(parts.join('. ')+'. Qualité de l’air indisponible. Tendance expérimentale : '+$('trend').textContent);speech.lang='fr-CA';speech.rate=.85;speech.onerror=()=>{$('notice').textContent='La lecture vocale n’a pas pu démarrer.';};window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);};
 window.weatherPrototype={ingest,getState:()=>({raw:{...raw},displayed:{...shown},history:history.map(r=>({...r})),threshold}),clearHistory:()=>{history=[];render();},estimate};
 seed();input();restoreWeatherCache();render();refreshIfDue();
 
@@ -64,7 +64,7 @@ function render(){
  const refreshed=lastFetchedAt?new Date(lastFetchedAt).toLocaleString('fr-CA',{timeZone:'America/Toronto',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'jamais';
  $('source-status').textContent='Montréal · Open-Meteo · '+onlineMessage+' · Dernière actualisation réussie : '+refreshed;
  $('rain-title').textContent='Précipitations';$('rain-note').textContent=onlineData?`Sur ${Math.round(onlineData.current.interval/60)} minutes`:'Intervalle courant';
- $('gas-note').textContent='Capteur local non connecté';$('gasResistance').textContent='—';
+ $('gas-note').textContent='Aucune donnée disponible';$('air-quality').textContent='Indisponible';
  $('outlook-title').textContent=`Prévisions sur ${horizon} heures`;$('forecast-label').textContent='Open-Meteo · modèle météo';
  $('forecast').replaceChildren();renderDaily();
  if(!onlineData){for(const key of ['temperature','humidity','pressure','windSpeed','rainfall','windDirection'])$(key).textContent='—';$('trend').textContent=onlineMessage;return;}
@@ -98,7 +98,7 @@ async function loadOnline(){
 }
 function speakOnline(){
  if(!('speechSynthesis' in window)){$('notice').textContent='Lecture vocale indisponible.';return;}
- const text=onlineData?`Montréal. ${onlineMessage}. Température ${$('temperature').textContent} degrés Celsius. Humidité ${$('humidity').textContent} pour cent. Pression ${$('pressure').textContent} kilopascals. Vent ${$('windSpeed').textContent} kilomètres par heure, ${$('windDirection').textContent}. Précipitations ${$('rainfall').textContent} millimètres, ${$('rain-note').textContent}. ${$('general-summary').textContent} ${$('daily-forecast').textContent}`:'Montréal. '+onlineMessage;
+ const text=onlineData?`Montréal. ${onlineMessage}. Température ${$('temperature').textContent} degrés Celsius. Humidité ${$('humidity').textContent} pour cent. Pression ${$('pressure').textContent} kilopascals. Vent ${$('windSpeed').textContent} kilomètres par heure, ${$('windDirection').textContent}. Précipitations ${$('rainfall').textContent} millimètres, ${$('rain-note').textContent}. Qualité de l’air indisponible. ${$('general-summary').textContent} ${$('daily-forecast').textContent}`:'Montréal. '+onlineMessage;
  window.speechSynthesis.cancel();const speech=new SpeechSynthesisUtterance(text);speech.lang='fr-CA';speech.rate=.85;speech.onerror=()=>{$('notice').textContent='Lecture vocale indisponible.';};window.speechSynthesis.speak(speech);
 }
 $('data-mode').onchange=()=>{mode=$('data-mode').value;clearTimeout(refreshTimer);$('notice').textContent='';render();if(mode==='online')refreshIfDue();};
