@@ -165,3 +165,27 @@ function renderDaily(){
   heading.append('. ');card.append(heading,description,temperatures,rain);$('daily-forecast').append(card);
  }
 }
+async function getSensorData() {
+    try {
+        const response = await fetch("/api/stats");
+
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        return {
+            temperature: data.temperature,
+            humidity: data.humidity,
+            pressure: data.pressure,
+            gas: data.gas,
+            airQuality: data.air_quality,
+            timestamp: new Date()
+        };
+
+    } catch (error) {
+        console.error("Could not fetch sensor data:", error);
+        return null;
+    }
+}

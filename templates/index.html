@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Météo — vue d’ensemble</title><link rel="stylesheet" href="/static/css/style.css?v=8"><script src="/static/js/main.js?v=8" defer></script></head>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Météo — vue d’ensemble</title><link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"><script src="{{ url_for('static', filename='js/main.js')}}" defer></script></head>
 <body><main>
 <p id="source-status" class="source-status">Montréal · connexion en cours…</p>
 <section class="dashboard" aria-label="Mesures météo actuelles">
