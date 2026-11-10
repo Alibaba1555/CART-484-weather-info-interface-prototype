@@ -18,7 +18,7 @@
 <label for="threshold">Seuil de température (°C)</label><input id="threshold" type="number" min="0" max="10" step="0.1" value="0.5"><p id="decision"></p>
 <button id="contrast">Fond clair</button><button id="fullscreen">Plein écran</button>
 <label for="horizon">Durée de prévision</label><select id="horizon"><option value="12">12 heures</option><option value="24">24 heures</option></select>
-<h3>Comment sont calculées les prévisions ?</h3><p>La tendance récente de température et de pression est atténuée dans le temps. Après au moins trois journées complètes, les variations horaires observées servent à estimer le cycle thermique des trois prochains jours. Ce modèle expérimental ne prédit pas le passage des fronts, la pluie ou les nuages. Les températures décrivent l’environnement où se trouve le capteur.</p>
+<h3>Comment sont calculées les prévisions ?</h3><p>La tendance récente de température et de pression est atténuée dans le temps. Après au moins trois journées complètes, les variations horaires observées servent à estimer le cycle thermique des trois prochains jours. Le ciel et les précipitations sont estimés par des règles simples utilisant l’humidité, la tendance de pression et son écart à la moyenne locale. Les pourcentages ne sont pas calibrés sur des observations réelles de pluie. Le passage des fronts n’est pas modélisé. Les températures décrivent l’environnement où se trouve le capteur.</p>
 <p>La qualité de l’air dépend du traitement du capteur ; la résistance du gaz seule ne constitue pas un indice AQI extérieur.</p>
 <p id="clock"></p><p>CART 484 · Prototype pour Jérôme</p></div>
 </details></div><p id="notice" role="status" aria-live="polite"></p>

@@ -25,14 +25,15 @@ function render() {
   }
   $('outlook-title').textContent='Prévisions sur '+$('horizon').value+' heures';
   $('daily-forecast').replaceChildren();
-  $('daily-note').textContent=f.daily.length ? 'Estimations expérimentales du cycle thermique · aucune prévision de pluie ou de nuages.' : (f.daily_note || 'Historique insuffisant pour une estimation sur trois jours.');
+  $('daily-note').textContent=f.daily.length ? 'Estimations locales expérimentales · probabilités indicatives, non calibrées.' : (f.daily_note || 'Historique insuffisant pour une estimation sur trois jours.');
   for (const day of f.daily) {
     const a=document.createElement('article'); a.className='day';
     const h=document.createElement('h3'); h.textContent=new Date(day.date+'T12:00:00Z').toLocaleDateString('fr-CA',{timeZone:'America/Toronto',weekday:'long',day:'numeric',month:'long'});
     const p=document.createElement('p'); p.className='day-condition'; p.textContent=day.description;
     const v=document.createElement('p'); v.textContent='Minimum : '+fmt(day.min)+' degrés Celsius. Maximum : '+fmt(day.max)+' degrés Celsius.';
     const note=document.createElement('p'); note.textContent='Confiance : '+day.confidence.toLowerCase()+'.';
-    a.append(h,p,v,note); $('daily-forecast').append(a);
+    const rain=document.createElement('p'); rain.textContent='Probabilité de précipitations : '+day.precipitation_probability+' % (estimation non calibrée).';
+    a.append(h,p,v,rain,note); $('daily-forecast').append(a);
   }
   $('clock').textContent=data.history.count+' mesures conservées · rétention : 365 jours.';
   $('decision').textContent='Seuil d’affichage de la température : '+$('threshold').value+' °C.';

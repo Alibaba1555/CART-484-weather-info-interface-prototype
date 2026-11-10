@@ -32,8 +32,8 @@ No database or mock sensor is committed to Git. If already tracked, run `git rm 
 Three-day temperature ranges start after three completed local days with at least 200 samples and 20 covered hours each.
 The recent trend is damped; daily temperature patterns are learned from up to 14 recent days.
 The database still retains a year for future analysis. No claim of a trained annual model is made.
-No cloud, rain probability or rainfall amounts are inferred. The rainfall card is explicitly unavailable.
-The brief summary remains short and describes estimated temperature/pressure changes.
+Daily sky descriptions and precipitation percentages use experimental, uncalibrated humidity/relative-pressure rules. These percentages are heuristic scores, not empirically validated probabilities. No rainfall amount is inferred; the rainfall measurement card stays unavailable. Coefficients are documented in estimate_conditions(). Three-day forecasts still require three completed sample days. Indoor readings cannot represent outdoor sky conditions.
+The brief summary remains short and includes tomorrow’s experimental sky description once history is sufficient.
 Stale or gappy recent records stop forecasts. These are experimental estimates, not validated weather predictions.
 
 ## Frontend

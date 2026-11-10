@@ -58,6 +58,35 @@ def slope(rows, key):
     return sum((x-xm)*(r[key]-ym) for x, r in zip(xs, rows)) / den if den else 0
 
 
+def estimate_conditions(rows, recent, day_number):
+    """Uncalibrated prototype rules, NOT a statistically measured probability.
+
+    Use pressure relative to this station's own recent mean (not a sea-level
+    pressure threshold). Humidity is local, so indoor use is not representative.
+    Coefficients are design choices. No randomness or external weather input.
+    """
+    last = recent[-1]
+    baseline = sum(r['pressure'] for r in rows) / len(rows)
+    humidity_mean = sum(r['humidity'] for r in rows) / len(rows)
+    weight = math.exp(-(day_number - 1) / 2)
+    humidity = humidity_mean + (last['humidity'] - humidity_mean) * weight
+    falling = max(-2, min(2, -slope(recent, 'pressure'))) * weight
+    low_relative = max(-10, min(10, baseline - last['pressure'])) * weight
+    score = 25 + (humidity - 60) * 1.2 + falling * 12 + low_relative * 2
+    # Coarse 10% steps avoid implying fine precision; bounds are arbitrary too.
+    probability = int(round(max(10, min(90, score)) / 10) * 10)
+    if probability >= 60:
+        description = 'Ciel couvert, précipitations possibles'
+    elif humidity >= 75 or probability >= 40:
+        description = 'Plutôt nuageux'
+    elif humidity <= 55 and probability <= 20:
+        description = 'Plutôt ensoleillé'
+    else:
+        description = 'Éclaircies et passages nuageux'
+    return {'description': description, 'precipitation_probability': probability,
+            'probability_calibrated': False, 'method': 'local_heuristic_v1'}
+
+
 def forecast(rows, now):
     result = {'hourly': [], 'daily': [], 'summary': 'Historique en cours de collecte.',
               'note': 'Estimation locale expérimentale · aucune donnée météo externe.'}
@@ -104,8 +133,8 @@ def forecast(rows, now):
         for n in range(1,4):
             date = today + timedelta(days=n)
             vals = [estimate(datetime(date.year,date.month,date.day,h,tzinfo=ZONE).timestamp()) for h in range(24)]
-            result['daily'].append({'date': date.isoformat(), 'min': min(vals), 'max': max(vals), 'description': 'Cycle thermique estimé', 'confidence': 'Faible' if n == 1 else 'Très faible'})
-        result['summary'] += f" Demain : température estimée entre {result['daily'][0]['min']} et {result['daily'][0]['max']} degrés Celsius."
+            result['daily'].append({'date': date.isoformat(), 'min': min(vals), 'max': max(vals), **estimate_conditions(rows, recent, n), 'confidence': 'Très faible'})
+        result['summary'] += f" Demain : {result['daily'][0]['description'].lower()} selon l’estimation locale. Température estimée entre {result['daily'][0]['min']} et {result['daily'][0]['max']} degrés Celsius."
     else:
         result['daily_note'] = 'Au moins 3 journées complètes de mesures sont nécessaires pour estimer le cycle quotidien.'
     return result
