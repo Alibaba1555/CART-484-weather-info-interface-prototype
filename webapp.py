@@ -19,7 +19,7 @@ def load_sensor(path):
 
 
 def create_app(sensor, db_path, demo=False, pressure_unit=None):
-    pressure_unit = pressure_unit or ("hPa" if demo else "kPa")
+    pressure_unit = pressure_unit or "hPa"
     if pressure_unit not in ("kPa", "hPa"):
         raise ValueError("pressure_unit must be kPa or hPa")
     app = Flask(__name__)
@@ -29,7 +29,7 @@ def create_app(sensor, db_path, demo=False, pressure_unit=None):
     def collect():
         try:
             stats = dict(sensor.get_stats())
-            # Hardware reports kPa; keep history/forecast internals in hPa.
+            # Convert only when explicitly configured for a kPa sensor.
             if pressure_unit == 'kPa':
                 pressure = stats.get('pressure')
                 if isinstance(pressure, bool) or not isinstance(pressure, (int, float)):
@@ -75,7 +75,7 @@ def create_app(sensor, db_path, demo=False, pressure_unit=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--demo', action='store_true', help='Use local mock sensor and a separate test database')
-    parser.add_argument('--pressure-unit', choices=['kPa', 'hPa'], default=None, help='Sensor output unit: default kPa on device, hPa in demo')
+    parser.add_argument('--pressure-unit', choices=['kPa', 'hPa'], default=None, help='Sensor output unit: default hPa (Adafruit BME680)')
     parser.add_argument('--port', type=int, default=80)
     parser.add_argument('--sensor-path', type=Path, default=Path.home()/'bme680'/'sensor.py')
     args = parser.parse_args()
