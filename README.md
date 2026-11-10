@@ -7,8 +7,8 @@ Default port remains 80. If unavailable, run `python3 webapp.py --port 5000` and
 The real sensor module is loaded explicitly from `~/bme680/sensor.py`. An adjacent test sensor.py cannot override it.
 If needed, pass `--sensor-path /absolute/path/to/sensor.py`.
 Jimmy's sensor module must expose `get_stats()` and `air_quality_label(gas)`.
-Expected units: temperature °C, humidity %, pressure hPa, gas resistance ohms.
-Confirm these units before hardware deployment. The page converts pressure to kPa.
+Expected units: temperature °C, humidity %, pressure kPa by default, gas resistance ohms.
+Confirm these units before hardware deployment. If the real sensor returns hPa, run `python3 webapp.py --pressure-unit hPa`. Internally records remain in hPa; the page displays kPa. Demo mode still expects hPa from the existing mock sensor.
 
 ## Tianshun's Windows-only test
 `python -m pip install -r requirements.txt`

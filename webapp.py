@@ -18,7 +18,10 @@ def load_sensor(path):
     return module
 
 
-def create_app(sensor, db_path, demo=False):
+def create_app(sensor, db_path, demo=False, pressure_unit=None):
+    pressure_unit = pressure_unit or ("hPa" if demo else "kPa")
+    if pressure_unit not in ("kPa", "hPa"):
+        raise ValueError("pressure_unit must be kPa or hPa")
     app = Flask(__name__)
     state = {'error': None}
     lock = threading.Lock()
@@ -26,6 +29,12 @@ def create_app(sensor, db_path, demo=False):
     def collect():
         try:
             stats = dict(sensor.get_stats())
+            # Hardware reports kPa; keep history/forecast internals in hPa.
+            if pressure_unit == 'kPa':
+                pressure = stats.get('pressure')
+                if isinstance(pressure, bool) or not isinstance(pressure, (int, float)):
+                    raise ValueError('Pressure must be a numeric kPa value')
+                stats['pressure'] = pressure * 10
             if stats.get('gas') is not None:
                 stats['air_quality'] = sensor.air_quality_label(stats['gas'])
             save(db_path, normalize(stats), time.time())
@@ -66,13 +75,14 @@ def create_app(sensor, db_path, demo=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--demo', action='store_true', help='Use local mock sensor and a separate test database')
+    parser.add_argument('--pressure-unit', choices=['kPa', 'hPa'], default=None, help='Sensor output unit: default kPa on device, hPa in demo')
     parser.add_argument('--port', type=int, default=80)
     parser.add_argument('--sensor-path', type=Path, default=Path.home()/'bme680'/'sensor.py')
     args = parser.parse_args()
     path = ROOT/'sensor.py' if args.demo else args.sensor_path.expanduser()
     if not path.is_file():
         parser.error(f'Sensor file missing: {path}. For computer testing use --demo. On Pi use --sensor-path if needed.')
-    app = create_app(load_sensor(path), ROOT/'data'/('weather-demo.db' if args.demo else 'weather.db'), args.demo)
+    app = create_app(load_sensor(path), ROOT/'data'/('weather-demo.db' if args.demo else 'weather.db'), args.demo, args.pressure_unit)
     threading.Thread(target=app.extensions['weather_worker'], daemon=True).start()
     try:
         app.run(host='0.0.0.0', port=args.port, use_reloader=False)
