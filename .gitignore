@@ -1,0 +1,7 @@
+# Tianshun's local computer test only; do not commit the mock sensor.
+/sensor.py
+# Local measurements (real and demo) stay on each device.
+/data/
+__pycache__/
+*.pyc
+.venv/
