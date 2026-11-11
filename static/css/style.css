@@ -22,3 +22,7 @@ h1,h2{font-size:clamp(30px,3vw,52px);line-height:1.1}.number{font-size:clamp(66p
 @media(max-width:850px){.daily-forecast{grid-template-columns:1fr}}
 
 .air-quality{font-size:clamp(32px,4vw,68px);font-weight:700;line-height:1.15;overflow-wrap:anywhere;margin:8px 0}
+
+/* Four measured quantities: two columns, one on small screens. */
+.dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:600px){.dashboard{grid-template-columns:1fr}}
