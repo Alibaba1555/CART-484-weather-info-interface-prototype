@@ -250,14 +250,3 @@ changes from the last three hours and learn warmer and cooler times of day
 from recent history. Simple humidity and pressure rules add experimental sky
 and precipitation estimates. Everything runs locally. We have not validated
 these percentages against actual rain, and the device does not measure rainfall.
-
-## Applying this patch
-
-Replace only the four supplied files, preserving their folders: index.html,
-templates/index.html, static/css/style.css and README.md. Keep data/ intact.
-Both HTML entry points share the same JavaScript and CSS. The measured dashboard
-now has four cards in two columns (one column on narrow screens).
-Restart the website service after replacing templates and refresh the browser;
-use a hard refresh if the old CSS remains cached. No dependency update or
-sensor.py replacement is required. Do not run competing sensor-reading programs
-while the website collector owns the sensor.
